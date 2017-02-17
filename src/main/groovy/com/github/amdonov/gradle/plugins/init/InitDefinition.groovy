@@ -29,8 +29,8 @@ class InitDefinition {
     String user // defaults to "root"
     String group // defaults to "root"
     List<Integer> runLevels = new LinkedList<>() // rpm default == [3,4,5]
-    Boolean autoStart // default true
     Integer startSequence // default 85
     Integer stopSequence // default 15
-    Boolean createUser // default true
+    Boolean createUser // default false
+    String userShell // defaults /sbin/nologin
 }

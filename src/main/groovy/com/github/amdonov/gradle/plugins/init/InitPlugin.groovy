@@ -40,10 +40,10 @@ class InitPlugin implements Plugin<Project> {
                 user         : definition.user ?: definitionDefaults.user,
                 group        : definition.group ?: definitionDefaults.group,
                 runLevels    : definition.runLevels ?: definitionDefaults.runLevels,
-                autoStart    : definition.autoStart != null ? definition.autoStart : definitionDefaults.autoStart,
                 startSequence: definition.startSequence ?: definitionDefaults.startSequence,
                 stopSequence : definition.stopSequence ?: definitionDefaults.stopSequence,
-                createUser   : definition.createUser ?: definitionDefaults.createUser
+                createUser   : definition.createUser ?: definitionDefaults.createUser,
+                userShell    : definition.userShell ?: definitionDefaults.userShell
         ]
     }
 
@@ -85,12 +85,13 @@ class InitPlugin implements Plugin<Project> {
                 }
                 String cleanedName = daemonName.replaceAll("\\W", "").capitalize()
 
-
                 def outputDir = new File(project.buildDir, "daemon/${cleanedName}/${task.name}")
 
                 def mapping = [
                         'initd': "/etc/rc.d/init.d/${daemonName}"
                 ]
+
+
 
                 def templateTask = project.tasks.create("${task.name}${cleanedName}Daemon", InitTemplateTask)
                 templateTask.conventionMapping.map('destDir') { outputDir }
@@ -119,10 +120,20 @@ class InitPlugin implements Plugin<Project> {
                 }
 
                 task.doFirst {
-                    def installCmd = "/sbin/chkconfig ${daemonName} on"
+                    task.postInstall("/sbin/chkconfig ${daemonName} on")
+                    task.preUninstall("if [ \"\$1\" = \"0\" ]; then\n" +
+                            "    /etc/rc.d/init.d/${daemonName} stop >/dev/null 2>&1\n" +
+                            "    /sbin/chkconfig --del ${daemonName}\n" +
+                            "fi")
 
-                    if (templateTask.getContext().autoStart) {
-                        task.postInstall(installCmd)
+                    if (templateTask.getContext().createUser) {
+                        def user = definition.user ?: defaults.user
+                        def userShell = definition.userShell ?: defaults.userShell
+                        def group = definition.group ?: defaults.group
+
+                        task.preInstall("/usr/sbin/groupadd -r ${group} 2>/dev/null || :\n" +
+                                "/usr/sbin/useradd -g ${group} \\\\ \n" +
+                                "    -s ${userShell} -r ${user} 2>/dev/null || :")
                     }
 
                 }
@@ -132,6 +143,6 @@ class InitPlugin implements Plugin<Project> {
     }
 
     def getDefaultDaemonDefinition() {
-        new InitDefinition(null, null, 'root', 'root', [3, 4, 5], Boolean.TRUE, 85, 15, Boolean.TRUE)
+        new InitDefinition(null, null, 'root', 'root', [3, 4, 5], 85, 15, Boolean.FALSE, '/sbin/nologin')
     }
 }
