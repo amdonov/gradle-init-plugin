@@ -132,7 +132,7 @@ class InitPlugin implements Plugin<Project> {
                         def group = definition.group ?: defaults.group
 
                         task.preInstall("/usr/sbin/groupadd -r ${group} 2>/dev/null || :\n" +
-                                "/usr/sbin/useradd -g ${group} \\ \n" +
+                                "/usr/sbin/useradd -g ${group} \\\n" +
                                 "    -s ${userShell} -r ${user} 2>/dev/null || :")
                     }
 
