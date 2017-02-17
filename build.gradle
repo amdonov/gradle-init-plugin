@@ -22,7 +22,7 @@ dependencies {
     compile 'com.netflix.nebula:gradle-ospackage-plugin:4.3.0'
 }
 
-version = "0.1.1"
+version = "0.2.0"
 group = "com.github.amdonov.gradle"
 
 pluginBundle {
