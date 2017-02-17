@@ -44,7 +44,7 @@ class InitPlugin implements Plugin<Project> {
                 stopSequence : definition.stopSequence ?: definitionDefaults.stopSequence,
                 createUser   : definition.createUser ?: definitionDefaults.createUser,
                 userShell    : definition.userShell ?: definitionDefaults.userShell,
-                createHome   : definition.createHome ?: definitionDefaults.createHome
+                userHome     : definition.userHome ?: definitionDefaults.userHome
         ]
     }
 
@@ -131,14 +131,14 @@ class InitPlugin implements Plugin<Project> {
                         def user = definition.user ?: defaults.user
                         def userShell = definition.userShell ?: defaults.userShell
                         def group = definition.group ?: defaults.group
-                        def createHome = definition.createHome ?: defaults.createHome
+                        def userHome = definition.userHome ?: defaults.userHome
 
                         def userCommand = "/usr/sbin/groupadd -r ${group} 2>/dev/null || :\n" +
                                 "/usr/sbin/useradd -g ${group} \\\n"
-                        if (createHome) {
-                            userCommand += " -m "
+                        if (!"".equals(userHome)) {
+                            userCommand += " -d " + userHome
                         }
-                        userCommand += "    -s ${userShell} -r ${user} 2>/dev/null || :"
+                        userCommand += " -s ${userShell} -r ${user} 2>/dev/null || :"
 
                         task.preInstall(userCommand)
                     }
@@ -150,6 +150,6 @@ class InitPlugin implements Plugin<Project> {
     }
 
     def getDefaultDaemonDefinition() {
-        new InitDefinition(null, null, 'root', 'root', [3, 4, 5], 85, 15, Boolean.FALSE, '/sbin/nologin', Boolean.FALSE)
+        new InitDefinition(null, null, 'root', 'root', [3, 4, 5], 85, 15, Boolean.FALSE, '/sbin/nologin', "")
     }
 }
