@@ -92,7 +92,7 @@ class InitPlugin implements Plugin<Project> {
                         'initd': "/etc/rc.d/init.d/${daemonName}"
                 ]
 
-                def templateTask = project.tasks.create("${task.name}${cleanedName}Daemon", DaemonTemplateTask)
+                def templateTask = project.tasks.create("${task.name}${cleanedName}Daemon", InitTemplateTask)
                 templateTask.conventionMapping.map('destDir') { outputDir }
                 templateTask.conventionMapping.map('context') {
                     Map<String, String> context = toContext(defaults, definition)
