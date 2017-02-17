@@ -33,4 +33,5 @@ class InitDefinition {
     Integer stopSequence // default 15
     Boolean createUser // default false
     String userShell // defaults /sbin/nologin
+    Boolean createHome // default false
 }

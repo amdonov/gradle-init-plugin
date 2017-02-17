@@ -43,7 +43,8 @@ class InitPlugin implements Plugin<Project> {
                 startSequence: definition.startSequence ?: definitionDefaults.startSequence,
                 stopSequence : definition.stopSequence ?: definitionDefaults.stopSequence,
                 createUser   : definition.createUser ?: definitionDefaults.createUser,
-                userShell    : definition.userShell ?: definitionDefaults.userShell
+                userShell    : definition.userShell ?: definitionDefaults.userShell,
+                createHome   : definition.createHome ?: definitionDefaults.createHome
         ]
     }
 
@@ -130,10 +131,16 @@ class InitPlugin implements Plugin<Project> {
                         def user = definition.user ?: defaults.user
                         def userShell = definition.userShell ?: defaults.userShell
                         def group = definition.group ?: defaults.group
+                        def createHome = definition.createHome ?: defaults.createHome
 
-                        task.preInstall("/usr/sbin/groupadd -r ${group} 2>/dev/null || :\n" +
-                                "/usr/sbin/useradd -g ${group} \\\n" +
-                                "    -s ${userShell} -r ${user} 2>/dev/null || :")
+                        def userCommand = "/usr/sbin/groupadd -r ${group} 2>/dev/null || :\n" +
+                                "/usr/sbin/useradd -g ${group} \\\n"
+                        if (createHome) {
+                            userCommand += " -m "
+                        }
+                        userCommand += "    -s ${userShell} -r ${user} 2>/dev/null || :"
+
+                        task.preInstall(userCommand)
                     }
 
                 }
@@ -143,6 +150,6 @@ class InitPlugin implements Plugin<Project> {
     }
 
     def getDefaultDaemonDefinition() {
-        new InitDefinition(null, null, 'root', 'root', [3, 4, 5], 85, 15, Boolean.FALSE, '/sbin/nologin')
+        new InitDefinition(null, null, 'root', 'root', [3, 4, 5], 85, 15, Boolean.FALSE, '/sbin/nologin', Boolean.FALSE)
     }
 }
