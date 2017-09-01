@@ -43,6 +43,7 @@ class InitPlugin implements Plugin<Project> {
                 startSequence: definition.startSequence ?: definitionDefaults.startSequence,
                 stopSequence : definition.stopSequence ?: definitionDefaults.stopSequence,
                 createUser   : definition.createUser ?: definitionDefaults.createUser,
+                autoStart    : definition.autoStart ?: definitionDefaults.autoStart,
                 userShell    : definition.userShell ?: definitionDefaults.userShell,
                 userHome     : definition.userHome ?: definitionDefaults.userHome
         ]
@@ -121,7 +122,12 @@ class InitPlugin implements Plugin<Project> {
                 }
 
                 task.doFirst {
-                    task.postInstall("/sbin/chkconfig ${daemonName} on")
+                    if (autoStart) {
+                        task.postInstall("/sbin/chkconfig ${daemonName} on")
+                    }
+                    else {
+                        task.postInstall("/sbin/chkconfig --add ${daemonName}")
+                    }
                     task.preUninstall("if [ \"\$1\" = \"0\" ]; then\n" +
                             "    /etc/rc.d/init.d/${daemonName} stop >/dev/null 2>&1\n" +
                             "    /sbin/chkconfig --del ${daemonName}\n" +
@@ -150,6 +156,6 @@ class InitPlugin implements Plugin<Project> {
     }
 
     def getDefaultDaemonDefinition() {
-        new InitDefinition(null, null, 'root', 'root', [3, 4, 5], 85, 15, Boolean.FALSE, '/sbin/nologin', "")
+        new InitDefinition(null, null, 'root', 'root', [3, 4, 5], 85, 15, Boolean.FALSE, Boolean.TRUE, '/sbin/nologin', "")
     }
 }
